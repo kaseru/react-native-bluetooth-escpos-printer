@@ -45,27 +45,37 @@ public class PrintPicture {
      * @return
      */
     public static byte[] POS_PrintBMP(Bitmap mBitmap, int nWidth, int nMode, int leftPadding) {
-        // 先转黑白，再调用函数缩放位图
         int width = ((nWidth + 7) / 8) * 8;
         int height = mBitmap.getHeight() * width / mBitmap.getWidth();
         height = ((height + 7) / 8) * 8;
-        int left = leftPadding == 0 ? 0 : ((leftPadding+7) / 8) * 8;
-
+        int left = leftPadding == 0 ? 0 : ((leftPadding + 7) / 8) * 8;
         Bitmap rszBitmap = mBitmap;
         if (mBitmap.getWidth() != width) {
             rszBitmap = Bitmap.createScaledBitmap(mBitmap, width, height, true);
         }
-
         Bitmap grayBitmap = toGrayscale(rszBitmap);
-        if(left>0){
-            grayBitmap = pad(grayBitmap,left,0);
+        if (left > 0) {
+            grayBitmap = pad(grayBitmap, left, 0);
         }
+        byte[] dithered = bitmapToBWPix(grayBitmap);
+        return eachLinePixToCmd(dithered, width + left, nMode);
+    }
 
-        byte[] dithered = thresholdToBWPic(grayBitmap);
-
-        byte[] data = eachLinePixToCmd(dithered, width+left, nMode);
-
-        return data;
+    public static byte[] POS_PrintBMP_WithThreshold(Bitmap mBitmap, int nWidth, int nMode, int leftPadding, int threshold) {
+        int width = ((nWidth + 7) / 8) * 8;
+        int height = mBitmap.getHeight() * width / mBitmap.getWidth();
+        height = ((height + 7) / 8) * 8;
+        int left = leftPadding == 0 ? 0 : ((leftPadding + 7) / 8) * 8;
+        Bitmap rszBitmap = mBitmap;
+        if (mBitmap.getWidth() != width) {
+            rszBitmap = Bitmap.createScaledBitmap(mBitmap, width, height, true);
+        }
+        Bitmap grayBitmap = toGrayscale(rszBitmap);
+        if (left > 0) {
+            grayBitmap = pad(grayBitmap, left, 0);
+        }
+        byte[] bwData = thresholdToBWPic(grayBitmap, threshold);
+        return eachLinePixToCmd(bwData, width + left, nMode);
     }
 
     /**
@@ -146,6 +156,25 @@ public class PrintPicture {
         mBitmap.getPixels(pixels, 0, mBitmap.getWidth(), 0, 0, mBitmap.getWidth(), mBitmap.getHeight());
         format_K_threshold(pixels, mBitmap.getWidth(), mBitmap.getHeight(), data);
         return data;
+    }
+
+    public static byte[] thresholdToBWPic(Bitmap mBitmap, int threshold) {
+        int[] pixels = new int[mBitmap.getWidth() * mBitmap.getHeight()];
+        byte[] data = new byte[mBitmap.getWidth() * mBitmap.getHeight()];
+        mBitmap.getPixels(pixels, 0, mBitmap.getWidth(), 0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+        format_K_threshold(pixels, mBitmap.getWidth(), mBitmap.getHeight(), data, threshold);
+        return data;
+    }
+
+    private static void format_K_threshold(int[] orgpixels, int xsize, int ysize, byte[] despixels, int threshold) {
+        int k = 0;
+        for (int i = 0; i < ysize; ++i) {
+            for (int j = 0; j < xsize; ++j) {
+                int gray = orgpixels[k] & 0xFF;
+                despixels[k] = (gray > threshold) ? (byte) 0 : (byte) 1;
+                ++k;
+            }
+        }
     }
 
     private static void format_K_threshold(int[] orgpixels, int xsize, int ysize, byte[] despixels) {
