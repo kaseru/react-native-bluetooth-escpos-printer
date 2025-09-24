@@ -481,6 +481,8 @@ RCT_EXPORT_METHOD(printPic:(NSString *) base64encodeStr withOptions:(NSDictionar
             //TODO:need to handel param "left" in the options.
             NSInteger paddingLeft = [[options valueForKey:@"left"] integerValue];
             if(!paddingLeft) paddingLeft = 0;
+            NSInteger threshold = [[options valueForKey:@"threshold"] integerValue];
+            if(!threshold) threshold = 160;
             NSData *decoded = [[NSData alloc] initWithBase64EncodedString:base64encodeStr options:0 ];
             UIImage *srcImage = [[UIImage alloc] initWithData:decoded scale:1];
             NSData *jpgData = UIImageJPEGRepresentation(srcImage, 1);
@@ -496,7 +498,7 @@ RCT_EXPORT_METHOD(printPic:(NSString *) base64encodeStr withOptions:(NSDictionar
                 size =[scaled size];
             }
             
-            unsigned char * graImage = [ImageUtils imageToGreyImage:scaled];
+            unsigned char * graImage = [ImageUtils imageToGreyImage:scaled threshold:threshold];
             unsigned char * formatedData = [ImageUtils format_K_threshold:graImage width:size.width height:size.height];
             NSData *dataToPrint = [ImageUtils eachLinePixToCmd:formatedData nWidth:size.width nHeight:size.height nMode:0];
             PrintImageBleWriteDelegate *delegate = [[PrintImageBleWriteDelegate alloc] init];
