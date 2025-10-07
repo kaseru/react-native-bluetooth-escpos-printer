@@ -483,6 +483,8 @@ RCT_EXPORT_METHOD(printPic:(NSString *) base64encodeStr withOptions:(NSDictionar
             if(!paddingLeft) paddingLeft = 0;
             NSInteger threshold = [[options valueForKey:@"threshold"] integerValue];
             if(!threshold) threshold = 160;
+            NSInteger linesPerChunk = [[options valueForKey:@"linesPerChunk"] integerValue];
+            if(!linesPerChunk) linesPerChunk = 0;
             NSData *decoded = [[NSData alloc] initWithBase64EncodedString:base64encodeStr options:0 ];
             UIImage *srcImage = [[UIImage alloc] initWithData:decoded scale:1];
             NSData *jpgData = UIImageJPEGRepresentation(srcImage, 1);
@@ -505,6 +507,7 @@ RCT_EXPORT_METHOD(printPic:(NSString *) base64encodeStr withOptions:(NSDictionar
             delegate.pendingResolve = resolve;
             delegate.pendingReject = reject;
             delegate.width = width;
+            delegate.linesPerChunk = linesPerChunk;
             delegate.toPrint  = dataToPrint;
             delegate.now = 0;
             [delegate print];

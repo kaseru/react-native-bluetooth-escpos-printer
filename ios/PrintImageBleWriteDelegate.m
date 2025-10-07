@@ -41,11 +41,14 @@
         NSInteger remaining = [_toPrint length] - _now;
         if (remaining <= 0) return;
         NSInteger bytesPerLine = (NSInteger)(_width / 8);
-        NSInteger maxChunk = 182;
-        NSInteger linesPerChunk = MAX(1, maxChunk / bytesPerLine);
-        NSInteger chunkSize = MIN(remaining, linesPerChunk * bytesPerLine);
+        NSInteger chunkSize = bytesPerLine;
+        if (_linesPerChunk == 0) {
+            NSInteger maxChunk = 182;
+            _linesPerChunk = MAX(1, maxChunk / bytesPerLine);
+        }
+        chunkSize = MIN(remaining, _linesPerChunk * bytesPerLine);
         NSData *subData = [_toPrint subdataWithRange:NSMakeRange(_now, chunkSize)];
-        NSLog(@"Write data (%ld bytes, %ld lines)", (long)chunkSize, (long)linesPerChunk);
+        NSLog(@"Write data (%ld bytes, %ld lines)", (long)chunkSize, (long)_linesPerChunk);
         [RNBluetoothManager writeValue:subData withDelegate:self];
         _now += chunkSize;
         [NSThread sleepForTimeInterval:0.01f];

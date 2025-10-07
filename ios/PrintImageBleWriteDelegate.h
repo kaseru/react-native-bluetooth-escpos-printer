@@ -11,6 +11,7 @@
 @interface PrintImageBleWriteDelegate :NSObject<WriteDataToBleDelegate>
 @property NSData *toPrint;
 @property NSInteger width;
+@property NSInteger linesPerChunk;
 @property NSInteger now;
 @property RNBluetoothManager *printer;
 @property RCTPromiseRejectBlock pendingReject;
